@@ -1,0 +1,17 @@
+{
+  "projects": {
+    "default": "kamuskita-28d92"
+  },
+  "targets": {
+    "kamuskita-28d92": {
+      "hosting": {
+        "prod": [
+          "kamuskita"
+        ],
+        "dev": [
+          "kamuskita-28d92"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "extends": [
+    "airbnb",
+    "react-app"
+  ],
+  "parser": "babel-eslint",
+  "plugins": [
+    "react",
+    "react-hooks"
+  ],
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true
+  },
+  "rules": {
+    "react/forbid-prop-types": 0,
+    "jsx-a11y/click-events-have-key-events": 1,
+    "react/no-unescaped-entities": 0
+  }
+}
