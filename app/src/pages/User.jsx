@@ -1,61 +1,59 @@
-import React, { PureComponent } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import dig from 'object-dig';
+import { useParams, useLocation } from 'react-router-dom';
 import firebase from '../utils/firebase';
 
 import Sidebar from '../components/Sidebar';
 import Definition from '../components/Definition';
+import Pagination from '../components/Pagination';
 
-class User extends PureComponent {
-  state = { user: null, definitions: [], loading: true }
+const User = () => {
+  const [definitions, setDefinitions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  componentDidMount() {
-    const { match: { params: { user } } } = this.props;
-    this.getDefinitions(user);
-  }
+  const { user } = useParams();
+  const cursor = new URLSearchParams(useLocation().search).get('cursor')
 
-  componentWillReceiveProps(nextProps) {
-    const { user } = this.state;
-    const nextUser = dig(nextProps, 'match', 'params', 'user');
-    if (nextUser !== user) {
-      this.getDefinitions(nextUser);
-    }
-  }
+  useEffect(() => {
+    setLoading(true);
+    firebase.readDefinitions(
+      definitions => {
+        setDefinitions(definitions);
+        setLoading(false);
+      },
+      { user, cursor },
+    )
+  }, [user, cursor])
+  useEffect(() => () => { }, []);
 
-  getDefinitions = (user) => {
-    this.setState(
-      { definitions: [], loading: true, user },
-      () => firebase.readDefinitions(
-        definitions => this.setState({ definitions, loading: false }),
-        { user },
-      ),
+  const renderDefinitions = () => {
+    if (loading) return <div className="text-center">Loading...</div>;
+    return (
+      <>
+        {definitions.map(
+          definition => <Definition definition={definition} key={definition.id} />,
+        )}
+        <Pagination definitions={definitions} />
+      </>
     );
   }
 
-  render() {
-    const { definitions, loading } = this.state;
-    return (
-      <main>
-        <div className="row">
-          <div className="medium-12 columns">
-            <div className="row">
-              <div className="medium-8 columns">
-                { loading
-                  ? <div className="text-center">Loading...</div>
-                  : definitions.map(
-                    definition => <Definition definition={definition} key={definition.id} />,
-                  )
-              }
-              </div>
-              <div className="medium-4 columns">
-                <Sidebar />
-              </div>
+  return (
+    <main>
+      <div className="row">
+        <div className="medium-12 columns">
+          <div className="row">
+            <div className="medium-8 columns">
+              {renderDefinitions()}
+            </div>
+            <div className="medium-4 columns">
+              <Sidebar />
             </div>
           </div>
         </div>
-      </main>
-    );
-  }
+      </div>
+    </main>
+  );
 }
 
 User.propTypes = {

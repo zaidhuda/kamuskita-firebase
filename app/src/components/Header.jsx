@@ -12,6 +12,7 @@ const hideSearchIn = [
 ];
 
 const Header = () => {
+  const [nonce, setNonce] = useState(Date.now());
   const [active, setActive] = useState(false);
   const [word, setWord] = useState('');
   const [user, setUser] = useState('');
@@ -25,14 +26,14 @@ const Header = () => {
       setUser(signedUser);
     });
   }, []);
-  useEffect(() => () => {}, []);
+  useEffect(() => () => { }, []);
 
   useEffect(() => {
     history.listen((location) => {
       setSearchVisibilitiy(!hideSearchIn.includes(location.pathname));
     });
   }, []);
-  useEffect(() => () => {}, []);
+  useEffect(() => () => { }, []);
 
   const inputValueChange = (e) => {
     const { value } = e.target;
@@ -123,7 +124,7 @@ const Header = () => {
                   <Link className="button icon" to="/add"><i className="material-icons">add</i></Link>
                 </li>
                 <li>
-                  <Link className="button icon" to="/random"><i className="material-icons">shuffle</i></Link>
+                  <Link onClick={() => setNonce(Date.now())} className="button icon" to={`/random?nonce=${nonce}`}><i className="material-icons">shuffle</i></Link>
                 </li>
                 {renderUserMenu()}
               </ul>

@@ -1,59 +1,47 @@
-import React, { PureComponent } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import dig from 'object-dig';
+import { useParams } from 'react-router-dom';
 import firebase from '../utils/firebase';
 
 import Sidebar from '../components/Sidebar';
 import DefinitionCard from '../components/Definition';
 
-class Definition extends PureComponent {
-  state = { id: null, definition: {}, loading: true }
+const Definition = () => {
+  const { id } = useParams();
+  const [definition, setDefinition] = useState({});
+  const [loading, setLoading] = useState(true);
 
-  componentDidMount() {
-    const { match: { params: { id } } } = this.props;
-    this.getDefinition(id);
-  }
+  useEffect(() => {
+    setLoading(true);
+    firebase.readDefinition(
+      id,
+      definition => {
+        setDefinition(definition);
+        setLoading(false);
+      },
+    )
+  }, [id]);
+  useEffect(() => () => { }, []);
 
-  componentWillReceiveProps(nextProps) {
-    const { id } = this.state;
-    const nextId = dig(nextProps, 'match', 'params', 'id');
-    if (nextId !== id) {
-      this.getDefinition(nextId);
-    }
-  }
-
-  getDefinition = (id) => {
-    this.setState(
-      { definition: {}, loading: true, id },
-      () => firebase.readDefinition(
-        id,
-        definition => this.setState({ definition, loading: false }),
-      ),
-    );
-  }
-
-  render() {
-    const { definition, loading } = this.state;
-    return (
-      <main>
-        <div className="row">
-          <div className="medium-12 columns">
-            <div className="row">
-              <div className="medium-8 columns">
-                { loading
-                  ? <div className="text-center">Loading...</div>
-                  : <DefinitionCard definition={definition} id={definition.id} />
+  return (
+    <main>
+      <div className="row">
+        <div className="medium-12 columns">
+          <div className="row">
+            <div className="medium-8 columns">
+              {loading
+                ? <div className="text-center">Loading...</div>
+                : <DefinitionCard definition={definition} id={definition.id} />
               }
-              </div>
-              <div className="medium-4 columns">
-                <Sidebar word={definition.key} />
-              </div>
+            </div>
+            <div className="medium-4 columns">
+              <Sidebar word={definition.key} />
             </div>
           </div>
         </div>
-      </main>
-    );
-  }
+      </div>
+    </main>
+  );
 }
 
 Definition.propTypes = {

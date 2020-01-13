@@ -1,78 +1,60 @@
-import React, { PureComponent } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import dig from 'object-dig';
 import firebase from '../utils/firebase';
-import Link from '../components/Link';
 
 import Sidebar from '../components/Sidebar';
 import Definition from '../components/Definition';
 
-class Definitions extends PureComponent {
-  state = { word: null, definitions: [], loading: true }
+const Definitions = () => {
+  const [definitions, setDefinitions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  componentDidMount() {
-    this.getWords();
-  }
+  const nonce = new URLSearchParams(useLocation().search).get('nonce')
 
-  componentWillReceiveProps() {
-    this.getWords();
-  }
-
-  getWords = () => {
+  useEffect(() => {
+    setLoading(true);
     firebase.readWords((words) => {
       const { length } = words;
       const pos = Math.floor(Math.random() * length);
-      this.getDefinitions(words[pos].id);
+      getDefinitions(words[pos].id);
     });
+  }, [nonce]);
+  useEffect(() => () => { }, []);
+
+  const getDefinitions = (word) => {
+    firebase.readDefinitions(
+      definitions => {
+        setDefinitions(definitions);
+        setLoading(false);
+      },
+      { key: word },
+    )
   }
 
-  getDefinitions = (word) => {
-    this.setState(
-      { definitions: [], loading: true, word },
-      () => firebase.readDefinitions(
-        definitions => this.setState({ definitions, loading: false }),
-        { key: word },
-      ),
-    );
-  }
-
-  renderDefinitions() {
-    const { loading, definitions, word } = this.state;
+  const renderDefinitions = () => {
     if (loading) return <div className="text-center">Loading...</div>;
-    if (!definitions.length) {
-      return (
-        <h4>
-          No record for
-          {' '}
-          <code>{word}</code>
-          ,
-          {' '}
-          <Link to={`/add?word=${word}`}>add definition</Link>
-        </h4>
-      );
-    }
     return definitions.map(
       definition => <Definition definition={definition} key={definition.id} />,
     );
   }
 
-  render() {
-    const { word } = this.state;
-    return (
-      <main>
-        <div className="row">
-          <div className="medium-12 columns">
-            <div className="row">
-              <div className="medium-8 columns">
-                {this.renderDefinitions()}
-              </div>
-              <div className="medium-4 columns">
-                <Sidebar word={word} />
-              </div>
+  return (
+    <main>
+      <div className="row">
+        <div className="medium-12 columns">
+          <div className="row">
+            <div className="medium-8 columns">
+              {renderDefinitions()}
+            </div>
+            <div className="medium-4 columns">
+              <Sidebar word={dig(definitions[0], 'word')} />
             </div>
           </div>
         </div>
-      </main>
-    );
-  }
+      </div>
+    </main>
+  );
 }
 
 export default Definitions;

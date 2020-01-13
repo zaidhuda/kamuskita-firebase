@@ -15,7 +15,7 @@ const firebaseConfig = {
 
 const DEFINITIONS = 'definitions';
 const WORDS = 'words';
-export const PAGINATE_PER = 17;
+export const PAGINATE_PER = 10;
 
 class Firebase {
   constructor() {
