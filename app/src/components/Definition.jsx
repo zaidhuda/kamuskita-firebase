@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import ReactMarkdown from 'react-markdown';
 import Link from './Link';
 import firebase from '../utils/firebase';
 
@@ -102,18 +103,27 @@ const Definition = ({
     );
   };
 
+  const parseContent = (content) => {
+    const words = [...new Set(content.match(new RegExp(/\[(.*?]*)\]/g)) || [])];
+    words.map((word) => {
+      const link = `${word}(/w/${encodeURI(word.slice(1, -1).toLowerCase())})`;
+      content = content.replace(word, link);
+    })
+    return content;
+  }
+
   return (
     <div className="callout definition">
       <Link to={`/w/${key}/d/${id}`} className="text-color-gray">
         <time dateTime={time}>{time.toLocaleDateString()}</time>
       </Link>
       <h1><Link to={`/w/${key}`}>{word}</Link></h1>
-      <p className="pre-line">{definition}</p>
-      <p className="pre-line"><em>{example}</em></p>
+      <ReactMarkdown source={parseContent(definition)} className="pre-line" />
+      <em><ReactMarkdown source={parseContent(example)} className="pre-line" /></em>
       <p>
         by
         {' '}
-        { userId
+        {userId
           ? <Link to={`/u/${userId}`}>{userName || 'anonymous'}</Link>
           : 'anonymous'
         }
